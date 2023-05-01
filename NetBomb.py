@@ -28,6 +28,7 @@ tryPorts = [21,22,80,194,443,8080,445,389,88,135,515,631,1080,3306,3389,9100]
 openPorts = []
 printer = []
 activeHosts = []
+menu = ""
 ##
 
 def portScanner(): # The main scan function
@@ -69,9 +70,9 @@ def portScanner(): # The main scan function
                         else:
                             printer.append(host)
             sock.close()
-    typeCounter()
+    typeCounter(menu)
     
-def typeCounter():
+def typeCounter(menu):
     menu = f"\n\nThere are {len(activeHosts)} {bgreen}connected{nc} hosts\n\n"
     
     if len(printer) == 1:
@@ -83,19 +84,41 @@ def typeCounter():
     if printer:
         menu += "[PR] Connect to printers\n"
 
+    menuSelector(menu)
+
+def menuSelector(menu):    
+
     print(menu)
+    menuSelection = input(f"{bblue}[NetBomb] {bcyan}>>{bred} ")
 
-    menuSelection = input("{bblue}[NetBomb] {bcyan}>>{bred} ")
+    match menuSelection:
+        case "PR":
+            print(f"Connecting to {bgreen}printers{nc}....")
+            printerScanner()
+        
+        case "pr":
+            print(f"Connecting to {bgreen}printers{nc}....")
+            printerScanner()
+        
+        case "exit":
+            print(f"{bblue}[NetBomb]{nc} Exiting...")
+            sys.exit(1)
+        case _:
+            print("select an option")
+            menuSelector(menu)
 
-def printerScanner(printer):
-   
+def printerScanner():
+    menu = ""
     for printers in printer:
-            print(printers)
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect((printers, 9100))
-            sock.sendall(b"@PJL INFO ID")
-            data = sock.recv(1024)
-            print(printer, ": PRINTER TYPE: ", data)
+        print(printers)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((printers, 9100))
+        sock.sendall(b"@PJL INFO ID\n")
+        data = sock.recv(1024).decode("utf-8")
+        print("\n\nCONNECTION ACCEPTED\n\n",printer, f" {byellow}PRINTER TYPE: {red}", data, f"{nc}")
+        menu += f" {byellow}PRINTER TYPE: {red}", data, f"{nc}"
+    
+    menuSelector(menu)
 
 
 
