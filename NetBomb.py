@@ -73,7 +73,7 @@ def portScanner(): # The main scan function
     typeCounter(menu)
     
 def typeCounter(menu):
-    menu = f"\n\nThere are {len(activeHosts)} {bgreen}connected{nc} hosts\n\n"
+    menu = f"\n\n{byellow}[RESTART]{nc} restart port scanner\n\nThere are {len(activeHosts)} {bgreen}connected{nc} hosts\n\n"
     
     if len(printer) == 1:
         menu += "There is a printer\n\n"
@@ -82,7 +82,7 @@ def typeCounter(menu):
         menu += f"There are {len(printer)} printers\n\n"
     
     if printer:
-        menu += "[PR] Connect to printers\n"
+        menu += f"{byellow}[PR]{nc} Connect to printers\n"
 
     menuSelector(menu)
 
@@ -93,22 +93,33 @@ def menuSelector(menu):
 
     match menuSelection:
         case "PR":
-            print(f"Connecting to {bgreen}printers{nc}....")
+            print(f"\n{bblue}[NetBomb] {nc}Connecting to {bgreen}printers{nc}....")
             printerScanner()
         
         case "pr":
-            print(f"Connecting to {bgreen}printers{nc}....")
+            print(f"\n{bblue}[NetBomb] {nc}Connecting to {bgreen}printers{nc}....")
             printerScanner()
         
         case "exit":
-            print(f"{bblue}[NetBomb]{nc} Exiting...")
+            print(f"\n{bblue}[NetBomb]{bred}[!] Exiting...{nc}")
             sys.exit(1)
+        
+        case "RESTART":
+            print(f"{bblue}[NetBomb] {nc}Connecting to {bgreen}printers{nc}....")
+        
+        case "restart":
+            print(f"\n{bblue}[NetBomb] {bgreen}Restarting Port Scanner....{nc}")
+            portScanner()
+        
         case _:
             print("select an option")
             menuSelector(menu)
 
 def printerScanner():
     menu = ""
+    if len(printer) == 0:
+        print(f"\n\n{bred}[!] There is not an active printer in the network.{nc}")
+
     for printers in printer:
         print(printers)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -116,7 +127,7 @@ def printerScanner():
         sock.sendall(b"@PJL INFO ID\n")
         data = sock.recv(1024).decode("utf-8")
         print("\n\nCONNECTION ACCEPTED\n\n",printer, f" {byellow}PRINTER TYPE: {red}", data, f"{nc}")
-        menu += f" {byellow}PRINTER TYPE: {red}", data, f"{nc}"
+        menu += f" {byellow}PRINTER TYPE: {red}" + data + f"{nc}"
     
     menuSelector(menu)
 
