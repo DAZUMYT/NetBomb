@@ -93,15 +93,15 @@ def typeCounter(menu):
     else:
         menu += f"There are {len(printerHost)} printers\n\n"
     
-    if printerHost:
-        menu += f"{byellow}[PR]{nc} Connect to printers\n"
-
     if len(sshHost) == 1:
         menu += "There is a ssh host\n\n"
 
     else:
         menu += f"There are {len(sshHost)} ssh hosts\n\n"
     
+    if printerHost:
+        menu += f"{byellow}[PR]{nc} Connect to printers\n"
+
     if sshHost:
         menu += f"{byellow}[SH]{nc} Connect to ssh hosts\n"
 
@@ -144,21 +144,79 @@ def menuSelector(menu):
             print("select an option")
             menuSelector(menu)
 
+
+
+
+
+#####################################################################################################
+
+
+
+
+
 def printerScanner():
     menu = ""
     if len(printerHost) == 0:
-        print(f"\n\n{bred}[!] There is not an active printer in the network.{nc}")
+        print(f"\n\n{bred}[!] There is not an active printer in the network.{nc}\n")
 
-    for printers in printerHost:
-        print(printers)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((printers, 9100))
-        sock.sendall(b"@PJL INFO ID\n")
-        data = sock.recv(1024).decode("utf-8")
-        print("\n\nCONNECTION ACCEPTED\n\n",printerHost, f" {byellow}PRINTER TYPE: {red}", data, f"{nc}")
-        menu += f" {byellow}PRINTER TYPE: {red}" + data + f"{nc}"
+    for printNum in range(1, len(printerHost)):
     
-    menuSelector(menu)
+        for printers in printerHost:
+            print(f"{bpurple}[{printers[printNum]}]{nc}")
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((printers, 9100))
+            sock.sendall(b"@PJL INFO ID\n")
+            data = sock.recv(1024).decode("utf-8")
+            print("\n\nCONNECTION ACCEPTED\n\n",printerHost, f"{byellow}[{printNum}] PRINTER TYPE: {red}", data, f"{nc}")
+            menu += f"{byellow}[{printNum}] PRINTER TYPE: {red}" + data + f"{nc}"
+    
+    printerSelector(menu)
+
+def printerSelector(menu):
+    menuSelection = input(f"{bblue}[NetBomb] {bgreen}[Printer] {bcyan}>>{bred} ")
+
+    match menuSelection:
+        
+        case "1":
+            printerChosen = printerHost[1]
+            printerConnection(printerChosen)
+
+        case "2":
+            printerChosen = printerHost[2]
+            printerConnection(printerChosen)
+        
+        case "3":
+            printerChosen = printerHost[3]
+            printerConnection(printerChosen)
+
+        case "4":
+            printerChosen = printerHost[4]
+            printerConnection(printerChosen)
+
+        case "5":
+            printerChosen = printerHost[5]
+            printerConnection(printerChosen)
+        
+        case "exit":
+            print(f"\n{bblue}[NetBomb]{bred}[!] Exiting...{nc}")
+            menu = ""
+            menuSelector(menu)
+        
+        case _:
+            print("select an option")
+            printerSelector(menu)
+
+def printerConnection(printerChosen):
+    pass
+
+
+#####################################################################################################
+
+
+
+
+
+
 
 def sshScanner():
     menu = ""
