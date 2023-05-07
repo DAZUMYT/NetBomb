@@ -2,7 +2,7 @@
 # Description: Automated netork scanner with hacking features
 # AUTHOR: DAZUM
 
-import os, sys, time, threading, tkinter, socket
+import os, sys, time, threading, tkinter, socket, re
 
 
 ## COLOR
@@ -36,7 +36,8 @@ printerHost = []
 sshHost = []
 
 def portScanner(): # The main scan function
-    networkIp = input(f"\nPlease enter your range of {byellow}IP{nc} (for example, '192.168.0')\n\n{bblue}[NetBomb] {bcyan}>>{bred} ")
+    networkIp = input(f"\nPlease enter your range of {byellow}IP{nc} (for example, '192.168.0', '10.10.10' .... [DEFAULT:192.168.0])\n\n{bblue}[NetBomb] {bcyan}>>{bred} ")
+    if networkIp == "": networkIp = "192.168.0"
 
     for endIp in range(1,255):
         host = networkIp + "." + str(endIp) 
@@ -100,10 +101,10 @@ def typeCounter(menu):
         menu += f"There are {len(sshHost)} ssh hosts\n\n"
     
     if printerHost:
-        menu += f"{byellow}[PR]{nc} Connect to printers\n"
+        menu += f"{byellow}[PR]{nc} Connect to printers\n\n"
 
     if sshHost:
-        menu += f"{byellow}[SH]{nc} Connect to ssh hosts\n"
+        menu += f"{byellow}[SH]{nc} Connect to ssh hosts\n\n"
 
     menuSelector(menu)
 
@@ -126,7 +127,7 @@ def menuSelector(menu):
             sys.exit(1)
         
         case "RESTART":
-            print(f"{bblue}[NetBomb] {nc}Connecting to {bgreen}printers{nc}....")
+            print(f"\n{bblue}[NetBomb] {bgreen}Restarting Port Scanner....{nc}")
         
         case "restart":
             print(f"\n{bblue}[NetBomb] {bgreen}Restarting Port Scanner....{nc}")
@@ -156,49 +157,54 @@ def menuSelector(menu):
 
 def printerScanner():
     menu = ""
+    
     if len(printerHost) == 0:
         print(f"\n\n{bred}[!] There is not an active printer in the network.{nc}\n")
 
-    for printNum in range(1, len(printerHost)):
-    
+    for printNum in range(0, len(printerHost)):
+        
         for printers in printerHost:
-            print(f"{bpurple}[{printers[printNum]}]{nc}")
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((printers, 9100))
             sock.sendall(b"@PJL INFO ID\n")
             data = sock.recv(1024).decode("utf-8")
-            print("\n\nCONNECTION ACCEPTED\n\n",printerHost, f"{byellow}[{printNum}] PRINTER TYPE: {red}", data, f"{nc}")
-            menu += f"{byellow}[{printNum}] PRINTER TYPE: {red}" + data + f"{nc}"
+            sock.close()
+            versionType = re.split("\n", data)
+            #print(f"\n\n{bgreen}CONNECTION ACCEPTED\n\n",f"{bcyan}[{printers}]", f"{byellow}[{printNum + 1}] PRINTER TYPE: {red}", versionType[1], f"{nc}\n\n")
+            menu += f"\n\n{bgreen}CONNECTION ACCEPTED\n\n{bcyan}[{printers}]{byellow} [{printNum + 1}] PRINTER TYPE: {red}{versionType[1]}{nc}\n\n"
     
+    menu += f"\n\n{byellow} {bgreen}Select{nc} the printer you want to connect by choosing its {byellow}number{nc}. {bred}Exit{nc} printer menu by choosing {byellow}'exit'{nc}\n\n"
+
     printerSelector(menu)
 
 def printerSelector(menu):
+    print(menu)
     menuSelection = input(f"{bblue}[NetBomb] {bgreen}[Printer] {bcyan}>>{bred} ")
 
     match menuSelection:
         
         case "1":
-            printerChosen = printerHost[1]
-            printerConnection(printerChosen)
+            printerChosen = printerHost[0]
+            printerConnectionOptionSelector(printerChosen)
 
         case "2":
-            printerChosen = printerHost[2]
-            printerConnection(printerChosen)
+            printerChosen = printerHost[1]
+            printerConnectionOptionSelector(printerChosen)
         
         case "3":
-            printerChosen = printerHost[3]
-            printerConnection(printerChosen)
+            printerChosen = printerHost[2]
+            printerConnectionOptionSelector(printerChosen)
 
         case "4":
-            printerChosen = printerHost[4]
-            printerConnection(printerChosen)
+            printerChosen = printerHost[3]
+            printerConnectionOptionSelector(printerChosen)
 
         case "5":
-            printerChosen = printerHost[5]
-            printerConnection(printerChosen)
+            printerChosen = printerHost[4]
+            printerConnectionOptionSelector(printerChosen)
         
         case "exit":
-            print(f"\n{bblue}[NetBomb]{bred}[!] Exiting...{nc}")
+            print(f"\n{bblue}[NetBomb] {bgreen}[Printer] {bred}[!] Exiting...{nc}")
             menu = ""
             menuSelector(menu)
         
@@ -206,8 +212,40 @@ def printerSelector(menu):
             print("select an option")
             printerSelector(menu)
 
-def printerConnection(printerChosen):
-    pass
+def printerConnectionOptionSelector(printerChosen):
+    print(f"\n\n{byellow}[MCR]{nc} Connect to the printer manually by port 9100, raw (Manual Connection Raw)\n\n")
+    menuSelection = input(f"{bblue}[NetBomb] {bgreen}[Printer|{printerChosen}] {bcyan}>>{bred} ")
+
+    
+    match menuSelection:
+        
+        case "MCR":
+            printerManualConnectionRaw(printerChosen)
+
+        case "mcr":
+            printerManualConnectionRaw(printerChosen)
+       
+        case "exit":
+            print(f"\n{bblue}[NetBomb] {bgreen}[Printer|{printerChosen}] {bred}[!] Exiting...{nc}")
+            menu = ""
+            menuSelector(menu)
+        
+        case _:
+            print("select an option")
+            printerConnectionOptionSelector(printerChosen)
+
+def printerManualConnectionRaw(printerChosen):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((printerChosen, 9100))
+    while commandInput != "exit":
+        commandInput = input(f"{bblue}[NetBomb] {bgreen}[Printer|{printerChosen}|MCR] {bcyan}>>{bred} ")
+        command = commandInput + "\n"
+        sock.sendall(command.encode())
+        data = sock.recv(1024).decode("utf-8")
+        outputData = re.split("\n", data)
+        print(f"\n\n{bcyan}[{printerChosen}]", f"{byellow} OUTPUT: {red}", outputData[1], f"{nc}\n\n")
+
+
 
 
 #####################################################################################################
