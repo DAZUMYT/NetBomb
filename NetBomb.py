@@ -2,7 +2,7 @@
 # Description: Automated netork scanner with hacking features
 # AUTHOR: DAZUM
 
-import os, sys, time, threading, tkinter, socket, re
+import os, sys, time, threading, tkinter, socket, re, time
 
 
 ## COLOR
@@ -28,7 +28,7 @@ tryPorts = [21,22,80,194,443,8080,445,389,88,135,515,631,1080,3306,3389,9100]
 openPorts = []
 
 activeHosts = []
-menu = ""
+menu = "{byellow}[H]{nc} show help"
 ##
 
 ## TYPES OF HOSTS
@@ -165,12 +165,12 @@ def printerScanner():
         
         for printers in printerHost:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(5)
             sock.connect((printers, 9100))
             sock.sendall(b"@PJL INFO ID\n")
             data = sock.recv(1024).decode("utf-8")
             sock.close()
             versionType = re.split("\n", data)
-            #print(f"\n\n{bgreen}CONNECTION ACCEPTED\n\n",f"{bcyan}[{printers}]", f"{byellow}[{printNum + 1}] PRINTER TYPE: {red}", versionType[1], f"{nc}\n\n")
             menu += f"\n\n{bgreen}CONNECTION ACCEPTED\n\n{bcyan}[{printers}]{byellow} [{printNum + 1}] PRINTER TYPE: {red}{versionType[1]}{nc}\n\n"
     
     menu += f"\n\n{byellow} {bgreen}Select{nc} the printer you want to connect by choosing its {byellow}number{nc}. {bred}Exit{nc} printer menu by choosing {byellow}'exit'{nc}\n\n"
@@ -237,14 +237,22 @@ def printerConnectionOptionSelector(printerChosen):
 def printerManualConnectionRaw(printerChosen):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((printerChosen, 9100))
-    while commandInput != "exit":
+    connected = True
+    while connected:
         commandInput = input(f"{bblue}[NetBomb] {bgreen}[Printer|{printerChosen}|MCR] {bcyan}>>{bred} ")
         command = commandInput + "\n"
-        sock.sendall(command.encode())
-        data = sock.recv(1024).decode("utf-8")
-        outputData = re.split("\n", data)
-        print(f"\n\n{bcyan}[{printerChosen}]", f"{byellow} OUTPUT: {red}", outputData[1], f"{nc}\n\n")
+        
+        if commandInput == "exit":
+            printerConnectionOptionSelector(printerChosen)
+            
+        else:
+            sock.sendall(command.encode())
+            current = time.time()
+            data = sock.recv(1024).decode("utf-8")
+            outputData = re.split("\n", data)
+            print(f"\n\n{bcyan}[{printerChosen}]", f"{byellow} OUTPUT: {red}", outputData[1], f"{nc}\n\n")
 
+        
 
 
 
